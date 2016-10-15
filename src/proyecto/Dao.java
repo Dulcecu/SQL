@@ -3,13 +3,16 @@ package proyecto;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.util.Objects;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * Created by Turpitude on 10/10/2016.
  */
 public abstract class Dao {
+
+    PreparedStatement prst;
 
     StringBuffer command= new StringBuffer();
     Field[] fields;
@@ -23,7 +26,7 @@ public abstract class Dao {
     }
 
 
-public void insert() throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+public void insert() throws InvocationTargetException, IllegalAccessException, NoSuchMethodException, SQLException {
 
     command= new StringBuffer();
     command.append("INSERT INTO ").append(this.getClass().getSimpleName()+" (");
@@ -62,10 +65,14 @@ public void insert() throws InvocationTargetException, IllegalAccessException, N
         }
 
     }
+    // CHANGE
+    prst.executeQuery(command.toString());
+
+
 
 
 }
-public  void update() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+public  void update() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, SQLException {
 
     command= new StringBuffer();
     command.append("UPDATE ").append(this.getClass().getSimpleName()+" SET ");
@@ -91,24 +98,10 @@ public  void update() throws NoSuchMethodException, InvocationTargetException, I
         }
     }
     System.out.println(command.toString());
-    /*int i=0;
-    for(Field f:fields){
 
-        m=this.getClass().getMethod(getMethod((f.getName())),null);
-        Object ret=m.invoke(this,null);
-
-        if(ret instanceof String){
-            System.out.println("res:"+ret.toString());
-        }
-        if(ret instanceof Integer){
-            int id= (int) ret;
-            System.out.println("res:"+id);
-        }
-
-    }*/
-
+    prst.executeQuery(command.toString());
 }
-public  void delete(){
+public  void delete() throws SQLException {
 
     command= new StringBuffer();
     command.append("DELETE FROM ").append(this.getClass().getSimpleName()+" WHERE ");
@@ -124,9 +117,28 @@ public  void delete(){
     }
     System.out.println(command.toString());
 
+    prst.executeQuery(command.toString());
+
 }
 
-public  void select(){
+public ResultSet select() throws SQLException {
+
+
+    command= new StringBuffer();
+    command.append("SELECT * FROM ").append(this.getClass().getSimpleName()+" WHERE ");
+
+    System.out.println(this.getClass().getSimpleName());
+    fields= this.getClass().getFields();
+    for(Field f :fields){
+        if(f.getName().toString().equals("id")){
+            command.append(f.getName().toString()+"=?;");
+        }
+    }
+    System.out.println(command.toString());
+
+    ResultSet rs= prst.executeQuery(command.toString());
+    return rs;
+
 
 }
 
